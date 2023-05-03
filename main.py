@@ -1,6 +1,29 @@
 import tkinter as tk
 
 
+# textラベル更新
+def updateText():
+    global text
+    global count
+    global after_id
+    
+    count += 1
+
+    text.config(
+        text="CONNECTING" + "." * (count % 4)
+    )
+    
+    # 250ms * 10まで"CONNECTING..."を表示
+    if count > 10:
+        text.config(
+            text="SUCCESS! 524kHz",
+            width=15
+        )
+        root.after_cancel(after_id)
+    else:    
+        after_id = root.after(250, updateText)
+
+
 # ウィンドウ画面設定
 root = tk.Tk()
 root.update_idletasks()
@@ -25,35 +48,10 @@ text = tk.Label(
 )
 text.pack(anchor="center", expand=1)
 
-
-dict = {
-    "text": "SUCCESS! 524kHz"
-}
-
+# 更新フェーズカウンター
 count = 0
 
-# textラベル更新
-def updateText(dict):
-    global text
-    global count
-    global after_id
-    
-    count += 1
-
-    text.config(
-        text="CONNECTING" + "." * (count % 4)
-    )
-    
-    if count > 10:
-        text.config(
-            text="SUCCESS! 524kHz",
-            width=15
-        )
-        root.after_cancel(after_id)
-    else:    
-        after_id = root.after(250, updateText, dict)
-
-# 指定時間経過後にtextラベル更新
-root.after(10, updateText, dict)
+# textラベル更新フェーズに移行
+root.after(10, updateText)
 
 root.mainloop()
