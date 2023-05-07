@@ -26,10 +26,6 @@ def get_datetime():
 # 画面遷移
 def change_window(window):
     window.tkraise()
-    
-    # frame_connectionに移行
-    if window == frame_connection:
-        root.after(10, update_text)
 
 # textラベル更新
 def update_text():
@@ -52,6 +48,7 @@ def update_text():
             width=15
         )
         root.after_cancel(after_id)
+        frame_input.tkraise()
     else:    
         after_id = root.after(250, update_text)
 
@@ -113,7 +110,7 @@ button = tk.Button(
     padx=10,
     pady=10,
     font=("Consolas", 20, "bold"),
-    text="Connect",
+    text="Submit",
 )
 button.pack(padx=5, pady=5)
 
@@ -148,7 +145,8 @@ progressbar.pack(expand=1)
 
 root.protocol("WM_DELETE_WINDOW", quit_app)
 
-frame_input.tkraise()
+frame_connection.tkraise()
+root.after(500, update_text)
 
 thread = threading.Thread(target=get_datetime)
 thread.start()
