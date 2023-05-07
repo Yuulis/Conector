@@ -1,15 +1,35 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 import random
+import datetime
+import threading
+import time
 
+# 更新フェーズカウンター
+count = 0
+
+# 終了判定
+quitting_flag = False
+
+# 時刻表示
+def get_datetime():
+    global quitting_flag
+    
+    while not quitting_flag:
+        now_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+        datetime_label.config(
+            text=now_time
+        )
+        
+        time.sleep(1)
 
 # 画面遷移
 def change_window(window):
     window.tkraise()
     
     # frame_connectionに移行
-    root.after(10, update_text)
-
+    if window == frame_connection:
+        root.after(10, update_text)
 
 # textラベル更新
 def update_text():
@@ -35,6 +55,16 @@ def update_text():
     else:    
         after_id = root.after(250, update_text)
 
+# アプリケーション終了時
+def quit_app():
+    global quitting_flag
+    global root
+    global thread
+
+    quitting_flag = True
+    thread.join()
+    root.destroy()
+
 
 # rootメインウィンドウ設定
 root = tk.Tk()
@@ -51,10 +81,12 @@ root.grid_rowconfigure(0, weight=1)
 root.grid_columnconfigure(0, weight=1)
 
 # フレーム配置
-frame_input = tk.Frame(root, padx=50, pady=50)
-frame_input.grid(row=0, column=0, sticky=tk.NSEW)
-frame_connection = tk.Frame(root, padx=50, pady=50)
-frame_connection.grid(row=0, column=0, sticky=tk.NSEW)
+frame_input = tk.Frame(root, padx=50, pady=100)
+frame_input.grid(row=0, column=0, columnspan=2, sticky=tk.NSEW)
+frame_connection = tk.Frame(root, padx=50, pady=100)
+frame_connection.grid(row=0, column=0, columnspan=2, sticky=tk.NSEW)
+frame_time = tk.Frame(root)
+frame_time.grid(row=1, column=1, sticky=tk.NSEW)
 
 """
 ウィジェットリスト
@@ -64,6 +96,7 @@ frame_connection.grid(row=0, column=0, sticky=tk.NSEW)
 
 # frame_connection
     - text : 接続表示用
+    - progress_bar : 装飾用
 """
 entry = tk.Entry(
     frame_input,
@@ -93,6 +126,14 @@ label = tk.Label(
 )
 label.pack(anchor="center", expand=1)
 
+datetime_label = tk.Label(
+    frame_time,
+    anchor=tk.E,
+    font=("Consolas", 15),
+    text="0000/00/00 00:00:00",
+)
+datetime_label.pack(side="right")
+
 connection_progress = tk.IntVar()
 
 progressbar = ttk.Progressbar(
@@ -100,14 +141,16 @@ progressbar = ttk.Progressbar(
     orient="horizontal",
     variable=connection_progress,
     maximum=100,
-    length=300,
-    mode="determinate"
+    length=500,
+    mode="determinate",
 )
 progressbar.pack(expand=1)
 
-# 更新フェーズカウンター
-count = 0
+root.protocol("WM_DELETE_WINDOW", quit_app)
 
 frame_input.tkraise()
+
+thread = threading.Thread(target=get_datetime)
+thread.start()
 
 root.mainloop()
